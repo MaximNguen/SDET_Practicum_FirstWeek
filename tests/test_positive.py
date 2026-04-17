@@ -5,12 +5,11 @@ import random
 from data.urls import main_page_url
 from data.expected_data import expected_categories
 from data.mock_data import random_category
-from pages.main_page import MainPage
 
 @allure.epic("UI Тесты")
 @allure.feature("Позитивные тест-кейсы")
 class TestPositiveResult:
-    """Позитивные тест-кейсы для формы."""
+    """Позитивные тест-кейсы для проверки работоспособности элементов сайта."""
 
     @classmethod
     def setup_class(cls):
