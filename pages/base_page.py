@@ -26,3 +26,14 @@ class BasePage:
     def find_elements(self, *locator) -> List[WebElement]:
         """Поиск всех элементов на странице по локатору."""
         return self.driver.find_elements(*locator)
+    
+    def input_text(self, localor: tuple, text: str):
+        """Ввести текст в поле"""
+        element = self.find_element(localor)
+        element.clear()
+        element.send_keys(text)
+        
+    def get_text(self, locator: tuple, timeout: int = None) -> str:
+        """Получить текст элемента"""
+        element = self.find_element(locator, timeout)
+        return element.text
