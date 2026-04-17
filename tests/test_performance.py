@@ -31,29 +31,28 @@ class TestPositiveResult:
     def test_navbar_categories(self):
         """Проверка наличия категорий в навигационной панели."""
         categories = self.main_page.get_navbar_items()
-        name_category = [item.text.strip().upper() for item in categories]
         
         for category in expected_categories:
             with allure.step(f"Проверяем наличие категории: {category}"):
-                print("Категории на странице:", name_category)
-                assert category.upper() in name_category, f"Категория '{category}' не найдена в навигационной панели."
+                assert category.upper() in categories, f"Категория '{category}' не найдена в навигационной панели."
                 
     @allure.story("Проверка кликабельности категорий в навигационной панели")
     @allure.severity(allure.severity_level.CRITICAL)
-    def test_click_category(self):
+    def test_click_random_category(self):
         """Проверка кликабельности категорий в навигационной панели."""
+        categories = self.main_page.get_navbar_items()
         category = random.choice(random_category)
         with allure.step(f"Проверяем кликабельность категории: {category}"):
-            for item in self.main_page.get_navbar_items():
-                if item.text.strip() == category and item.text.strip() != 'HOME':
-                    self.main_page.click_category(category)
-                    assert self.main_page.driver.current_url != main_page_url, f"Клик по категории '{category}' не привел к переходу на другую страницу."
+            self.main_page.click_category(category)
+            current_url = self.main_page.driver.current_url
+            assert current_url != main_page_url, \
+                f"Клик по категории '{category}' не привел к переходу"
                     
     @allure.story("Проверка кликабельности всех категорий")
     @allure.severity(allure.severity_level.CRITICAL)
     def test_click_all_categories(self):
         """Проверка кликабельности каждой категории в навигационной панели."""
-        categories = self.main_page.get_navbar_items_text()
+        categories = self.main_page.get_navbar_items()
         
         for category in categories:
             with allure.step(f"Кликаем и проверяем категорию: {category}"):
