@@ -1,2 +1,2 @@
 # SDET_Practicum_FirstWeek
-Решение ТЗ первой недели практикума от SimbirSoft
+<h2>Решение ТЗ первой недели практикума от SimbirSoft</h2>
