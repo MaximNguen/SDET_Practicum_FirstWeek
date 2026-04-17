@@ -5,7 +5,6 @@ import random
 from data.urls import main_page_url
 from data.expected_data import expected_categories
 from data.mock_data import random_category
-from pages.items_page import ItemPage
 
 @allure.epic("UI Тесты")
 @allure.feature("Тест-кейсы на наличие элементов и их работоспособность")
