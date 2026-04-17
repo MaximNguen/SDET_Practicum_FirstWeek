@@ -34,7 +34,6 @@ class ItemPage(BasePage):
         """Получить данные о товарах на странице."""
         with allure.step("Получаем данные о товарах на странице"):
             products_cards = self.find_elements(*IPL.cards)
-            self.scroll(products_cards)
             products_dict = {}
             
             for card in products_cards:
