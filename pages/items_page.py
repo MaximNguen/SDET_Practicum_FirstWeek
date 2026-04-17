@@ -20,6 +20,7 @@ class ItemPage(BasePage):
         """Получить элемент выпадающего списка для сортировки товаров."""
         with allure.step("Получаем элемент выпадающего списка для сортировки товаров"):
             select = self.find_element(*IPL.filter_select)
+            self.scroll(select)
             return select
         
     def select_filter_option(self, option_text: str) -> None:
@@ -33,10 +34,12 @@ class ItemPage(BasePage):
         """Получить данные о товарах на странице."""
         with allure.step("Получаем данные о товарах на странице"):
             products_cards = self.find_elements(*IPL.cards)
+            self.scroll(products_cards)
             products_dict = {}
             
             for card in products_cards:
                 product_name = card.find_element(*IPL.name_product).text.strip()
+                self.scroll(card)
                 try:
                     product_price = card.find_element(*IPL.price_product).text.strip()
                 except:

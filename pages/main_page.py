@@ -14,6 +14,12 @@ class MainPage(BasePage):
     
     def __init__(self, driver):
         super().__init__(driver)
+
+    def get_navbar(self):
+        with allure.step("Получаем WebElement навигационной панели"):
+            nav = self.find_element(*MPL.navbar_list)
+            self.scroll(nav)
+            return nav
     
     def get_navbar_items(self) -> List[str]:
         """Получить список категорий из навигационной панели."""
