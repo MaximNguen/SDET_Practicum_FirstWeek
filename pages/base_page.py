@@ -1,5 +1,6 @@
 from selenium.webdriver.remote.webelement import WebElement
 from typing import List
+import allure
 
 from utils.waitHelpers import WaitHelpers as WH
 
@@ -16,24 +17,51 @@ class BasePage:
         
     def find_element(self, *locator) -> WebElement:
         """Поиск элемента на странице по локатору."""
-        return self.driver.find_element(*locator)
+        with allure.step(f"Находим элемент с локатором: {locator}"):
+            self.wait.wait_for_element(locator)
+            return self.driver.find_element(*locator)
     
     def click(self, *locator) -> None:
         """Клик по элементу, найденному по локатору."""
-        self.wait.wait_for_clickable(locator)
-        self.find_element(*locator).click()
+        with allure.step(f"Кликаем по элементу с локатором: {locator}"):
+            self.wait.wait_for_clickable(locator)
+            self.find_element(*locator).click()
         
     def find_elements(self, *locator) -> List[WebElement]:
         """Поиск всех элементов на странице по локатору."""
-        return self.driver.find_elements(*locator)
+        with allure.step(f"Находим все элементы с локатором: {locator}"):
+            self.wait.wait_for_element(locator)
+            return self.driver.find_elements(*locator)
     
-    def input_text(self, localor: tuple, text: str):
+    def input_text(self, locator: tuple, text: str):
         """Ввести текст в поле"""
-        element = self.find_element(localor)
-        element.clear()
-        element.send_keys(text)
+        with allure.step(f"Вводим текст '{text}' в элемент с локатором: {locator}"):
+            self.wait.wait_for_element(locator)
+            element = self.find_element(locator)
+            element.clear()
+            self.wait.wait_for_clickable(locator)
+            element.send_keys(text)
         
     def get_text(self, locator: tuple, timeout: int = None) -> str:
         """Получить текст элемента"""
-        element = self.find_element(locator, timeout)
-        return element.text
+        with allure.step(f"Получаем текст элемента с локатором: {locator}"):
+            self.wait.wait_for_element(locator)
+            element = self.find_element(locator, timeout)
+            return element.text
+    
+    def scroll(self, element: WebElement):
+        """Метод прокрутки до указанного элемента."""
+        with allure.step(f"Прокрутить страницу до элемента: {element}"):
+            self.driver.execute_script("arguments[0].scrollIntoView();", element)
+        return self
+    
+    def quit(self):
+        """Метод выхода из браузера."""
+        with allure.step("Закрываем браузер"):
+            self.driver.quit()
+        return self
+    
+    def open(self, url: str) -> None:
+        """Открыть главную страницу по URL."""
+        with allure.step(f"Открываем главную страницу по URL: {url}"):
+            self.driver.get(url)
