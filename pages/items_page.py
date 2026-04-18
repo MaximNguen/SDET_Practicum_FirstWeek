@@ -30,24 +30,40 @@ class ItemPage(BasePage):
             select = Select(select_element)
             select.select_by_visible_text(option_text)
             
-    def get_products_data(self) -> dict:
-        """Получить данные о товарах на странице."""
-        with allure.step("Получаем данные о товарах на странице"):
-            products_cards = self.find_elements(*IPL.cards)
-            products_dict = {}
-            
-            for card in products_cards:
-                product_name = card.find_element(*IPL.name_product).text.strip()
-                self.scroll(card)
+    def get_products_cards(self) -> List[WebElement]:
+        """Получить элементы карточек товаров на странице."""
+        with allure.step("Получаем элементы карточек товаров на странице"):
+            cards = self.find_elements(*IPL.cards)
+            return cards
+        
+    def get_products_prices(self) -> List[float]:
+        """Получить цены товаров на странице."""
+        with allure.step("Получаем цены товаров на странице"):
+            cards = self.get_products_cards()
+            prices = []
+            for card in cards:
                 try:
-                    product_price = card.find_element(*IPL.price_product).text.strip()
+                    price_element = card.find_element(*IPL.price_product)
+                    self.scroll(price_element)
                 except:
-                    try:
-                        product_price = card.find_element(*IPL.price_product_new).text.strip()
-                    except:
-                        continue
-                products_dict[product_name] = product_price
-                
-            if not products_dict:
-                raise ValueError("Не удалось найти данные о товарах на странице.")
-            return products_dict
+                    price_element = card.find_element(*IPL.price_product_new)
+                    self.scroll(price_element)
+                price_text = price_element.text.strip().replace('$', '')
+                try:
+                    price = float(price_text)
+                    prices.append(price)
+                except ValueError:
+                    continue
+            return prices
+    
+    def get_products_names(self) -> List[str]:
+        """Получить названия товаров на странице."""
+        with allure.step("Получаем названия товаров на странице"):
+            cards = self.get_products_cards()
+            names = []
+            for card in cards:
+                name_element = card.find_element(*IPL.name_product)
+                name_text = name_element.text.strip()
+                if name_text:
+                    names.append(name_text)
+            return names

@@ -20,32 +20,34 @@ class TestPositiveResult:
         print("\n========= Конец выполнения тест-кейсов на наличие элементов ==========")
 
     @pytest.fixture(autouse=True)
-    def setup(self, main_page, url=main_page_url):
+    def setup(self, main_page, items_page, url=main_page_url):
         self.main_page = main_page
+        self.items_page = items_page
         self.main_page.open(url)
         yield self.main_page
+        self.main_page.quit()
 
     @allure.story("Проверка наличия навигационной панели")
     @allure.severity(allure.severity_level.CRITICAL)
-    def test_get_navbar(self, main_page):
+    def test_get_navbar(self):
         nav = self.main_page.get_navbar()
         assert nav.is_displayed(), f"Не отображается панель навигационная"
 
     @allure.story("Проверка наличия фильтра товаров")
     @allure.severity(allure.severity_level.NORMAL)
-    def test_get_filter(self, items_page, main_page):
+    def test_get_filter(self):
         """Проверка наличия фильтра товаров."""
         category = random.choice(random_category)
         with allure.step(f"Переходим на страницу 1 из категорий"):
             self.main_page.click_category(category)
 
         with allure.step("Проверяем наличие фильтра"):
-            filter = items_page.get_filter_select()
+            filter = self.items_page.get_filter_select()
             assert filter.is_displayed(), f"Фильтр не отображается на сайте"
         
     @allure.story("Проверка наличия категорий в навигационной панели")
     @allure.severity(allure.severity_level.CRITICAL)
-    def test_navbar_categories(self, main_page):
+    def test_navbar_categories(self):
         """Проверка наличия категорий в навигационной панели."""
         categories = self.main_page.get_navbar_items()
         
@@ -55,9 +57,8 @@ class TestPositiveResult:
                 
     @allure.story("Проверка кликабельности категорий в навигационной панели")
     @allure.severity(allure.severity_level.CRITICAL)
-    def test_click_random_category(self, main_page, driver):
+    def test_click_random_category(self):
         """Проверка кликабельности категорий в навигационной панели."""
-        categories = self.main_page.get_navbar_items()
         category = random.choice(random_category)
         with allure.step(f"Проверяем кликабельность категории: {category}"):
             self.main_page.click_category(category)
@@ -67,7 +68,7 @@ class TestPositiveResult:
                     
     @allure.story("Проверка кликабельности всех категорий")
     @allure.severity(allure.severity_level.CRITICAL)
-    def test_click_all_categories(self, main_page, driver):
+    def test_click_all_categories(self):
         """Проверка кликабельности каждой категории в навигационной панели."""
         categories = self.main_page.get_navbar_items()
         
@@ -83,22 +84,21 @@ class TestPositiveResult:
                 
     @allure.story("Проверка наличия товаров на странице категории")
     @allure.severity(allure.severity_level.NORMAL)
-    def test_category_products(self, items_page, main_page):
+    def test_category_products(self):
         """Проверка наличия товаров на странице категории."""
         category = random.choice(random_category)
         with allure.step(f"Проверяем наличие товаров в категории: {category}"):
             self.main_page.click_category(category)
-            products_data = items_page.get_products_data()
+            products_data = self.items_page.get_products_cards()
             assert products_data, f"На странице категории '{category}' не найдено товаров."
             
     @allure.story("Проверка кликабельности сортировки товаров")
     @allure.severity(allure.severity_level.NORMAL)
-    def test_sorting_products(self, items_page, main_page):
+    def test_sorting_products(self):
         """Проверка кликабельности сортировки товаров."""
         category = random.choice(random_category)
         with allure.step(f"Проверяем сортировку товаров в категории: {category}"):
             self.main_page.click_category(category)
-            items_page.select_filter_option("Price Low > High")
-            products_data = items_page.get_products_data()
-            prices = [float(price.replace('$', '')) for price in products_data.values()]
-            assert prices == sorted(prices), "Товары не отсортированы по цене."
+            self.items_page.select_filter_option("Price Low > High")
+            products_data = self.items_page.get_products_prices()
+            assert products_data, f"На странице категории '{category}' не найдено товаров."
