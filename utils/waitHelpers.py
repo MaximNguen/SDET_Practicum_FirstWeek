@@ -43,7 +43,7 @@ class WaitHelpers:
             print(f"URL не изменился в течение {timeout} секунд.")
             return False
         
-    def wait_for_page_load(self, timeout=10):
+    def wait_for_page_load(self, timeout=3):
         """Ожидание полной загрузки страницы."""
         try:
             WebDriverWait(self.driver, timeout).until(

@@ -8,5 +8,6 @@ class CartPageLocators:
     name_product = (By.CSS_SELECTOR, 'td.align_left a')
     unit_price = (By.CSS_SELECTOR, "td.align_right")
     quantity_input = (By.CSS_SELECTOR, "input[type='text'][name^='quantity']")
+    remove_item_button = (By.CSS_SELECTOR, "a[href*='remove=']")
     total_price_on_product = (By.CSS_SELECTOR, "td.align_right")
     total_price = (By.XPATH, "//span[@class='bold totalamout' and not(contains(text(), 'Total'))]")

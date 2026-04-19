@@ -2,6 +2,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.by import By
 import allure
 from typing import List
+import random
 
 from pages.base_page import BasePage
 from data.locators_main import MainPageLocators as MPL
@@ -50,6 +51,67 @@ class MainPage(BasePage):
             search_input = self.find_element(*MPL.search_input)
             self.scroll(search_input)
             return search_input
+
+    def get_products_cards(self) -> List[WebElement]:
+        """Получить карточки товаров на главной странице."""
+        with allure.step("Получаем карточки товаров на главной странице"):
+            cards = self.find_elements(*MPL.product_cards)
+            valid_cards = []
+            for card in cards:
+                if card.find_elements(*MPL.product_name):
+                    valid_cards.append(card)
+            return valid_cards
+
+    def get_product_name_from_card(self, card: WebElement) -> str:
+        """Получить название товара из карточки на главной странице."""
+        with allure.step("Получаем название товара из карточки"):
+            name_element = card.find_element(*MPL.product_name)
+            return name_element.text.strip()
+
+    def get_random_product_card(self, excluded_product_names: List[str] = None) -> tuple[WebElement, str]:
+        """Получить случайную карточку товара на главной странице."""
+        with allure.step("Выбираем случайную карточку товара на главной странице"):
+            cards = self.get_products_cards()
+            if excluded_product_names is None:
+                excluded_product_names = []
+
+            available_cards = []
+            for card in cards:
+                product_name = self.get_product_name_from_card(card)
+                if product_name and product_name not in excluded_product_names:
+                    available_cards.append((card, product_name))
+
+            if not available_cards:
+                raise ValueError("Недостаточно карточек товаров для случайного выбора.")
+
+            selected_card, selected_name = random.choice(available_cards)
+            return selected_card, selected_name
+
+    def get_button_cart(self, card: WebElement) -> WebElement:
+        """Получить кнопку добавления товара в корзину на карточке."""
+        with allure.step("Получаем кнопку добавления товара в корзину на карточке"):
+            button = card.find_element(*MPL.product_cart_button)
+            self.scroll(button)
+            return button
+
+    def open_product_page_from_card(self, card: WebElement) -> None:
+        """Открыть страницу товара по карточке на главной странице."""
+        with allure.step("Открываем страницу товара по карточке на главной странице"):
+            product_link = card.find_element(*MPL.product_name)
+            self.scroll(product_link)
+            previous_url = self.driver.current_url
+            product_link.click()
+            self.wait.wait_until_url_change(previous_url=previous_url)
+            self.wait.wait_for_page_load()
+
+    def click_add_cart_button(self, card: WebElement) -> None:
+        """Клик по кнопке добавления товара в корзину на главной странице."""
+        with allure.step("Кликаем по кнопке добавления товара в корзину на главной странице"):
+            button = self.get_button_cart(card)
+            previous_url = self.driver.current_url
+            button.click()
+            self.wait.wait_until_url_change(previous_url=previous_url)
+            self.wait.wait_for_page_load()
         
     def enter_search_value(self, element: WebElement) -> None:
         """Ввести значение в поле поиска."""    

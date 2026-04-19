@@ -32,10 +32,39 @@ class ProductPage(BasePage):
             button = self.find_element(*PPL.add_to_cart_button)
             self.scroll(button)
             return button
+
+    def has_radio_options(self) -> bool:
+        """Проверить, есть ли на странице radio-options."""
+        with allure.step("Проверяем наличие radio-options на странице товара"):
+            radio_buttons = self.driver.find_elements(*PPL.option_radio_buttons)
+            return len(radio_buttons) > 0
+
+    def select_first_available_radio_option(self) -> bool:
+        """Выбрать первый доступный radio-option на странице товара, если он есть."""
+        with allure.step("Проверяем наличие radio-option и выбираем первый доступный"):
+            if not self.has_radio_options():
+                return False
+
+            radio_buttons = self.driver.find_elements(*PPL.option_radio_buttons)
+
+            for radio in radio_buttons:
+                if not radio.is_enabled() or radio.get_attribute("disabled"):
+                    continue
+
+                self.scroll(radio)
+                try:
+                    radio.click()
+                except Exception:
+                    self.driver.execute_script("arguments[0].click();", radio)
+                return True
+
+            return False
         
     def click_add_to_cart_button(self):
         """Клик по кнопке добавления товара в корзину."""
         with allure.step("Кликаем по кнопке добавления товара в корзину"):
+            if self.has_radio_options():
+                self.select_first_available_radio_option()
             button = self.get_add_to_cart_button()
             previous_url = self.driver.current_url
             button.click()

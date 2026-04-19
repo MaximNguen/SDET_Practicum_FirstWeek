@@ -110,3 +110,34 @@ class CartPage(BasePage):
                     self.input_text(quantity_input, text=str(new_quantity), press_enter=True)
                 except ValueError:
                     pass
+
+    def remove_item_by_order(self, position: int) -> None:
+        """Удалить товар из корзины по номеру."""
+        with allure.step(f"Удаляем товар из корзины по порядковому номеру {position}"):
+            items = self.get_cart_items()
+            if position < 1 or position > len(items):
+                raise ValueError(f"Неверный порядковый номер товара для удаления: {position}")
+
+            row = items[position - 1]
+            remove_buttons = row.find_elements(*CPL.remove_item_button)
+            if not remove_buttons:
+                raise ValueError(f"Кнопка удаления не найдена для товара с номером {position}")
+
+            previous_url = self.driver.current_url
+            self.scroll(remove_buttons[0])
+            remove_buttons[0].click()
+            self.wait.wait_until_url_change(previous_url=previous_url)
+            self.wait.wait_for_page_load()
+
+    def remove_even_items_by_order(self) -> int:
+        """Удалить из корзины все товары с четными порядковыми номерами."""
+        with allure.step("Удаляем из корзины все товары с четными порядковыми номерами"):
+            items_count = len(self.get_cart_items())
+            even_positions = list(range(2, items_count + 1, 2))
+
+            removed_count = 0
+            for position in reversed(even_positions):
+                self.remove_item_by_order(position)
+                removed_count += 1
+
+            return removed_count
