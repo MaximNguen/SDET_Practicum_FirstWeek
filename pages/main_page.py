@@ -39,8 +39,10 @@ class MainPage(BasePage):
         """Клик по категории в навигационной панели."""
         with allure.step(f"Кликаем по категории: {category_name}"):
             category_element = self._find_category_by_name(category_name)
+            previous_url = self.driver.current_url
             category_element.click()
-            self.wait.wait_until_url_change()
+            self.wait.wait_until_url_change(previous_url=previous_url)
+            self.wait.wait_for_page_load()
             
     def get_search_input(self):
         """Получить элемент поля поиска на главной странице."""
@@ -52,15 +54,16 @@ class MainPage(BasePage):
     def enter_search_value(self, element: WebElement) -> None:
         """Ввести значение в поле поиска."""    
         with allure.step(f"Вводим значение '{search_value}' в поле поиска"):
-            self.input_text(element, text=search_value)
+            self.input_text(element, text=search_value, press_enter=True)
             
     def go_to_cart_page(self):
         """Перейти на страницу корзины."""
         with allure.step("Переходим на страницу корзины"):
             cart_button = self.find_element(*MPL.cart_button)
             self.scroll(cart_button)
+            previous_url = self.driver.current_url
             cart_button.click()
-            self.wait.wait_until_url_change()
+            self.wait.wait_until_url_change(previous_url=previous_url)
             self.wait.wait_for_page_load()
 
     

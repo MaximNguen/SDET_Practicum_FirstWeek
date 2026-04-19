@@ -34,13 +34,14 @@ class BasePage:
             self.wait.wait_for_element(locator)
             return self.driver.find_elements(*locator)
     
-    def input_text(self, element: WebElement, text: str):
-        """Ввести текст в поле"""
+    def input_text(self, element: WebElement, text: str, press_enter: bool = False):
+        """Ввести текст в поле."""
         with allure.step(f"Вводим текст '{text}' в элемент с элементом: {element}"):
             element.clear()
             self.wait.wait_for_clickable(element)
             element.send_keys(text)
-            element.send_keys(Keys.ENTER)
+            if press_enter:
+                element.send_keys(Keys.ENTER)
         
     def get_text(self, locator: tuple, timeout: int = None) -> str:
         """Получить текст элемента"""
@@ -69,6 +70,12 @@ class BasePage:
     def go_back_page(self) -> None:
         """Вернуться на предыдущую страницу."""
         with allure.step("Возвращаемся на предыдущую страницу"):
+            previous_url = self.driver.current_url
             self.driver.back()
-            self.wait.wait_until_url_change()
+            url_changed = self.wait.wait_until_url_change(previous_url=previous_url)
+
+            if not url_changed and self.driver.current_url == previous_url:
+                self.driver.execute_script("window.history.go(-1)")
+                self.wait.wait_until_url_change(previous_url=previous_url)
+
             self.wait.wait_for_page_load()

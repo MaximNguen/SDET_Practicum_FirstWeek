@@ -31,11 +31,12 @@ class WaitHelpers:
             print(f"Элемент с локатором {locator} не кликабельный в течение {timeout} секунд.")
             return None
         
-    def wait_until_url_change(self, timeout=10):
-        """Метод ожидания изменения URL"""
+    def wait_until_url_change(self, timeout=10, previous_url=None):
+        """Метод ожидания изменения URL относительно переданного URL."""
+        base_url = previous_url if previous_url is not None else self.driver.current_url
         try:
             WebDriverWait(self.driver, timeout).until(
-                EC.url_changes(self.driver.current_url)
+                EC.url_changes(base_url)
             )
             return True
         except TimeoutException:

@@ -5,4 +5,4 @@ class MainPageLocators:
     
     navbar_list = (By.CSS_SELECTOR, 'ul.nav-pills.categorymenu')
     search_input = (By.ID, 'filter_keyword')
-    cart_button = (By.LINK_TEXT, 'Cart')
+    cart_button = (By.CSS_SELECTOR, "a[href*='rt=checkout/cart']")

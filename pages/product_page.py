@@ -1,5 +1,4 @@
 import allure
-import pytest
 import random
 
 from pages.base_page import BasePage
@@ -38,8 +37,9 @@ class ProductPage(BasePage):
         """Клик по кнопке добавления товара в корзину."""
         with allure.step("Кликаем по кнопке добавления товара в корзину"):
             button = self.get_add_to_cart_button()
+            previous_url = self.driver.current_url
             button.click()
-            self.wait.wait_until_url_change()
+            self.wait.wait_until_url_change(previous_url=previous_url)
             self.wait.wait_for_page_load()
     
     

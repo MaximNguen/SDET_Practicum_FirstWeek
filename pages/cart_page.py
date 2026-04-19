@@ -1,7 +1,7 @@
 from selenium.webdriver.remote.webelement import WebElement
 import allure
 from typing import List
-from selenium.webdriver.common.keys import Keys
+import re
 
 from data.locators_cart import CartPageLocators as CPL
 from pages.base_page import BasePage
@@ -26,7 +26,13 @@ class CartPage(BasePage):
         """Получить элементы строк товаров в корзине."""
         with allure.step("Получаем элементы строк товаров в корзине"):
             table = self.get_table_cart()
-            items = table.find_elements(*CPL.cart_rows)
+            rows = table.find_elements(*CPL.cart_rows)
+            items = []
+            for row in rows:
+                has_name = bool(row.find_elements(*CPL.name_product))
+                has_quantity = bool(row.find_elements(*CPL.quantity_input))
+                if has_name and has_quantity:
+                    items.append(row)
             return items
         
     def get_cart_items_data(self) -> List[dict]:
@@ -37,13 +43,20 @@ class CartPage(BasePage):
             for item in items:
                 name = item.find_element(*CPL.name_product).text.strip()
                 price_element = item.find_element(*CPL.unit_price)
-                quantity = item.find_element(*CPL.quantity_input).get_attribute('value')
+                quantity_value = item.find_element(*CPL.quantity_input).get_attribute('value')
                 self.scroll(price_element)
                 price_text = price_element.text.strip().replace('$', '')
+
                 try:
                     price = float(price_text)
                 except ValueError:
-                    price = None
+                    continue
+
+                try:
+                    quantity = int(quantity_value)
+                except (TypeError, ValueError):
+                    continue
+
                 cart_data.append({'name': name, 'price': price, 'quantity': quantity})
             return cart_data
     
@@ -52,9 +65,13 @@ class CartPage(BasePage):
         with allure.step("Получаем общую стоимость товаров в корзине"):
             total_element = self.find_element(*CPL.total_price)
             self.scroll(total_element)
-            total_text = total_element.text.strip().replace('Total: $', '')
+            total_text = total_element.text.strip().replace(',', '.')
+            match = re.search(r"\d+(?:\.\d+)?", total_text)
+            if not match:
+                return None
+
             try:
-                total_price = float(total_text)
+                total_price = float(match.group(0))
                 return total_price
             except ValueError:
                 return None
@@ -63,6 +80,8 @@ class CartPage(BasePage):
         """Получить товар с самой низкой ценой в корзине."""
         with allure.step("Получаем товар с самой низкой ценой в корзине"):
             cart_data = self.get_cart_items_data()
+            if not cart_data:
+                raise ValueError("В корзине отсутствуют товары для определения минимальной цены.")
             lowest_price_item = min(cart_data, key=lambda x: x['price'] if x['price'] is not None else float('inf'))
             return lowest_price_item
         
@@ -88,6 +107,6 @@ class CartPage(BasePage):
                 try:
                     current_quantity = int(current_value)
                     new_quantity = current_quantity * 2
-                    self.input_text(quantity_input, text=str(new_quantity))
+                    self.input_text(quantity_input, text=str(new_quantity), press_enter=True)
                 except ValueError:
                     pass

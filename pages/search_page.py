@@ -43,5 +43,7 @@ class SearchPage(BasePage):
         with allure.step("Кликаем по кнопке добавления товара в корзину"):
             button = self.get_button_cart(card)
             self.scroll(button)
+            previous_url = self.driver.current_url
             button.click()
-            self.wait.wait_until_url_change()
+            self.wait.wait_until_url_change(previous_url=previous_url)
+            self.wait.wait_for_page_load()
