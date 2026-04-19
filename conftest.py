@@ -1,5 +1,6 @@
 from selenium import webdriver
 import pytest
+import allure
 from selenium.webdriver.chrome.options import Options
 
 from pages.factory_pages.page_factory import PageFactory
@@ -54,3 +55,28 @@ def fresh_main_page(page_factory):
     """Фикстура для новой (сброшенной) главной страницы."""
     page_factory.reset()
     return page_factory.get_main_page()
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """При падении теста прикрепляет скриншот Selenium к Allure-отчету."""
+    outcome = yield
+    report = outcome.get_result()
+
+    if not report.failed or getattr(report, "wasxfail", False):
+        return
+
+    driver = item.funcargs.get("driver")
+    if driver is None:
+        return
+
+    try:
+        screenshot = driver.get_screenshot_as_png()
+    except Exception:
+        return
+
+    allure.attach(
+        screenshot,
+        name=f"{item.name}_{report.when}",
+        attachment_type=allure.attachment_type.PNG,
+    )

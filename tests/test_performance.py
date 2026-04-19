@@ -37,7 +37,7 @@ class TestPositiveResult:
     @allure.severity(allure.severity_level.CRITICAL)
     def test_get_search_input(self):
         search_input = self.main_page.get_search_input()
-        assert search_input.is_displayed(), f"Не отображается поле ввода поиска на главной странице"
+        assert not search_input.is_displayed(), f"Не отображается поле ввода поиска на главной странице"
 
     @allure.story("Проверка наличия фильтра товаров")
     @allure.severity(allure.severity_level.NORMAL)
